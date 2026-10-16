@@ -35,7 +35,7 @@ public class Main {
 
     private static void addParcel() {
         int type = choice("Parcel type (1. Document  2. Box  3. Fragile): ", 3, "Invalid parcel type!");
-        String tracking = ask("Tracking number (e.g. ABC0001): ", s -> {
+        String tracking = ask("Tracking number: ", s -> {
             String normalized = Parcel.validateTrackingNumber(s);
             REGISTRY.requireUnused(normalized);
             return normalized;
@@ -72,13 +72,23 @@ public class Main {
             System.out.println("No parcels yet.");
             return;
         }
-        System.out.printf(Locale.US, "%-10s %-9s %-30s %-9s %-9s %-12s %-10s%n",
-                "Tracking", "Type", "Receiver", "Charge kg", "Service", "Fee (Php)", "Status");
+        int nameWidth = Math.max("Receiver".length(),
+                REGISTRY.getAll().stream().mapToInt(p -> p.getReceiverName().length()).max().getAsInt());
+        String format = "%-8s  %-8s  %-" + nameWidth + "s  %10s  %-8s  %10s  %-9s";
+
+        String header = String.format(format,
+                "Tracking", "Type", "Receiver", "Weight(kg)", "Service", "Fee (Php)", "Status");
+        System.out.println(header);
+        System.out.println("-".repeat(header.length()));
         for (Parcel p : REGISTRY.getAll()) {
-            System.out.printf(Locale.US, "%-10s %-9s %-30s %-9.2f %-9s %-12.2f %-10s%n",
-                    p.getTrackingNumber(), p.getType(), p.getReceiverName(), p.getChargeableWeight(),
-                    p.getService().getName(), p.getDeliveryFee(), p.getStatus());
+            System.out.println(String.format(format,
+                    p.getTrackingNumber(), p.getType(), p.getReceiverName(), twoDecimals(p.getChargeableWeight()),
+                    p.getService().getName(), twoDecimals(p.getDeliveryFee()), p.getStatus()));
         }
+    }
+
+    private static String twoDecimals(double value) {
+        return String.format(Locale.US, "%.2f", value);
     }
 
     private static void changeService() {
