@@ -68,8 +68,7 @@ public class Main {
     }
 
     private static void viewParcels() {
-        if (REGISTRY.getAll().isEmpty()) {
-            System.out.println("No parcels yet.");
+        if (!hasParcels()) {
             return;
         }
         int nameWidth = Math.max("Receiver".length(),
@@ -87,11 +86,23 @@ public class Main {
         }
     }
 
+    /** Prints a message and returns false when there is nothing to show or modify. */
+    private static boolean hasParcels() {
+        if (REGISTRY.getAll().isEmpty()) {
+            System.out.println("No parcels yet.");
+            return false;
+        }
+        return true;
+    }
+
     private static String twoDecimals(double value) {
         return String.format(Locale.US, "%.2f", value);
     }
 
     private static void changeService() {
+        if (!hasParcels()) {
+            return;
+        }
         Parcel parcel = REGISTRY.find(Parcel.normalizeTrackingNumber(readLine("Tracking number: ")));
         if (parcel.isDelivered()) {
             System.out.println("Parcel already delivered!");
@@ -103,6 +114,9 @@ public class Main {
     }
 
     private static void markDelivered() {
+        if (!hasParcels()) {
+            return;
+        }
         Parcel parcel = REGISTRY.find(Parcel.normalizeTrackingNumber(readLine("Tracking number: ")));
         if (parcel.isDelivered()) {
             System.out.println("Parcel was already delivered.");
