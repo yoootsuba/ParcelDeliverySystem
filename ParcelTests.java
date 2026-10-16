@@ -1,4 +1,3 @@
-/** Dependency-free tests. Run: java -cp out ParcelTests */
 public class ParcelTests {
     private static int failures = 0;
 

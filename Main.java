@@ -35,7 +35,7 @@ public class Main {
 
     private static void addParcel() {
         int type = choice("Parcel type (1. Document  2. Box  3. Fragile): ", 3, "Invalid parcel type!");
-        String tracking = ask("Tracking number: ", s -> {
+        String tracking = ask("Tracking number (e.g. ABC0001): ", s -> {
             String normalized = Parcel.validateTrackingNumber(s);
             REGISTRY.requireUnused(normalized);
             return normalized;

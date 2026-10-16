@@ -2,7 +2,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Singleton: the single store of all parcels. */
+
 public class ParcelRegistry {
     private static final ParcelRegistry INSTANCE = new ParcelRegistry();
 
