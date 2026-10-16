@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
@@ -34,7 +35,7 @@ public class Main {
 
     private static void addParcel() {
         int type = choice("Parcel type (1. Document  2. Box  3. Fragile): ", 3, "Invalid parcel type!");
-        String tracking = ask("Tracking number (e.g. ABC6767): ", s -> {
+        String tracking = ask("Tracking number: ", s -> {
             String normalized = Parcel.validateTrackingNumber(s);
             REGISTRY.requireUnused(normalized);
             return normalized;
@@ -63,14 +64,18 @@ public class Main {
             return service;
         });
         REGISTRY.add(parcel);
-        System.out.printf("Parcel added successfully! Delivery fee: Php %.2f%n", parcel.getDeliveryFee());
+        System.out.printf(Locale.US, "Parcel added successfully! Delivery fee: Php %.2f%n", parcel.getDeliveryFee());
     }
 
     private static void viewParcels() {
-        System.out.printf("%-10s %-9s %-15s %-9s %-9s %-12s %-10s%n",
+        if (REGISTRY.getAll().isEmpty()) {
+            System.out.println("No parcels yet.");
+            return;
+        }
+        System.out.printf(Locale.US, "%-10s %-9s %-30s %-9s %-9s %-12s %-10s%n",
                 "Tracking", "Type", "Receiver", "Charge kg", "Service", "Fee (Php)", "Status");
         for (Parcel p : REGISTRY.getAll()) {
-            System.out.printf("%-10s %-9s %-15s %-9.2f %-9s %-12.2f %-10s%n",
+            System.out.printf(Locale.US, "%-10s %-9s %-30s %-9.2f %-9s %-12.2f %-10s%n",
                     p.getTrackingNumber(), p.getType(), p.getReceiverName(), p.getChargeableWeight(),
                     p.getService().getName(), p.getDeliveryFee(), p.getStatus());
         }
@@ -84,7 +89,7 @@ public class Main {
         }
         DeliveryService service = ask(SERVICE_PROMPT, Main::toService);
         parcel.changeService(service);
-        System.out.printf("Delivery service changed! New fee: Php %.2f%n", parcel.getDeliveryFee());
+        System.out.printf(Locale.US, "Delivery service changed! New fee: Php %.2f%n", parcel.getDeliveryFee());
     }
 
     private static void markDelivered() {
@@ -116,7 +121,7 @@ public class Main {
         return ask(prompt, s -> {
             int n = toInt(s);
             if (n < 1 || n > max) {
-                throw new InvalidParcelException(error);
+                throw new InvalidInputException(error);
             }
             return n;
         });
@@ -125,29 +130,31 @@ public class Main {
     private static DeliveryService toService(String s) {
         int n = toInt(s);
         if (n < 1 || n > SERVICES.size()) {
-            throw new InvalidParcelException("Invalid delivery service!");
+            throw new InvalidInputException("Invalid delivery service!");
         }
         return SERVICES.get(n - 1);
     }
 
     private static int toInt(String s) {
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            throw new InvalidParcelException("Please enter a whole number!");
+        if (!s.matches("\\d{1,9}")) {
+            throw new InvalidInputException("Please enter a positive whole number!");
         }
+        return Integer.parseInt(s);
     }
 
     private static double toDouble(String s) {
-        try {
-            return Double.parseDouble(s);
-        } catch (NumberFormatException e) {
-            throw new InvalidParcelException("Please enter a number!");
+        if (!s.matches("\\d{1,6}(\\.\\d+)?")) {
+            throw new InvalidInputException("Please enter a positive number like 2.5!");
         }
+        return Double.parseDouble(s);
     }
 
     private static String readLine(String prompt) {
         System.out.print(prompt);
+        if (!IN.hasNextLine()) {
+            System.out.println();
+            quit();
+        }
         String line = IN.nextLine().trim();
         if (line.equalsIgnoreCase("exit")) {
             quit();

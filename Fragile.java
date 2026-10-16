@@ -1,5 +1,6 @@
 public class Fragile extends Box {
     public static final double MAX_WEIGHT = 30;
+    public static final int MAX_NOTE_LENGTH = 50;
 
     private final String handlingNote;
 
@@ -10,8 +11,8 @@ public class Fragile extends Box {
     }
 
     public static String validateHandlingNote(String handlingNote) {
-        if (handlingNote.isBlank()) {
-            throw new InvalidParcelException("Handling note must not be empty!");
+        if (handlingNote.isBlank() || handlingNote.length() > MAX_NOTE_LENGTH) {
+            throw new InvalidParcelException("Handling note must be 1 to " + MAX_NOTE_LENGTH + " characters!");
         }
         return handlingNote;
     }

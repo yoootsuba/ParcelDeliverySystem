@@ -1,11 +1,22 @@
+import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 public abstract class Parcel {
-    public enum Status { PENDING, DELIVERED }
+    public enum Status {
+        PENDING("Pending"), DELIVERED("Delivered");
+
+        private final String label;
+
+        Status(String label) { this.label = label; }
+
+        @Override
+        public String toString() { return label; }
+    }
 
     public static final double MIN_WEIGHT = 0.01;
 
+    private static final Pattern NAME_FORMAT = Pattern.compile("\\p{L}[\\p{L} .'-]{0,29}");
     private static final Pattern TRACKING_FORMAT = Pattern.compile("[A-Za-z]{3}\\d{4}");
 
     private final String trackingNumber;
@@ -33,20 +44,24 @@ public abstract class Parcel {
     }
 
     public static String validateReceiverName(String receiverName) {
-        if (receiverName.isBlank()) {
-            throw new InvalidParcelException("Receiver name must not be empty!");
+        if (!NAME_FORMAT.matcher(receiverName).matches()) {
+            throw new InvalidParcelException("Receiver name must be 1 to 30 characters: letters, spaces, . ' - only!");
         }
         return receiverName;
     }
 
     public static double validateWeight(double weight, double maxWeight) {
         if (!(weight >= MIN_WEIGHT)) {
-            throw new InvalidParcelException("Weight must be at least " + MIN_WEIGHT + " kg!");
+            throw new InvalidParcelException("Weight must be at least " + kg(MIN_WEIGHT) + " kg!");
         }
         if (weight > maxWeight) {
-            throw new InvalidParcelException("Weight must not exceed " + maxWeight + " kg for this parcel type!");
+            throw new InvalidParcelException("Weight must not exceed " + kg(maxWeight) + " kg for this parcel type!");
         }
         return weight;
+    }
+
+    private static String kg(double value) {
+        return BigDecimal.valueOf(value).stripTrailingZeros().toPlainString();
     }
 
     public abstract String getType();
